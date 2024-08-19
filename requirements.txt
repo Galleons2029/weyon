@@ -1,1 +1,4 @@
 fastapi~=0.111.0
+coloredlogs~=15.0.1
+python-magic~=0.4.27
+pydantic~=2.8.2

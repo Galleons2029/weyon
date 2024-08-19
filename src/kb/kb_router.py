@@ -6,7 +6,7 @@ from kb.file_service import (check_file_type,
                              check_file_size)
 
 router = APIRouter(prefix="/kb",
-                   tags=["Knowledge Base", "File Uploader", "Retriever"]
+                   tags=["Knowledge Base"]
                    )
 
 

@@ -15,6 +15,9 @@ class BaseResponse(BaseModel):
     msg: str = Field(description="返回消息", default="")
     data: Any = Field(description="返回数据", default=None)
 
+    def __getstate__(self):
+        return vars(self)
+
 
 def success(msg=ResponseCode.SUCCESS.name, data=None):
     return BaseResponse(code=ResponseCode.SUCCESS, msg=msg, data=data)
