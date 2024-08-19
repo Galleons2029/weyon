@@ -10,5 +10,5 @@ client = TestClient(app)
 class Test(TestCase):
     def test_root(self):
         resp = client.get('/')
-        self.assertEquals(resp.status_code, 200)
-        self.assertEquals(resp.json(), {"message": "Hello World"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), {"message": "Hello World"})

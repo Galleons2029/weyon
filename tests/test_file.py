@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 
 from common.base_response import ResponseCode
 from config import UploadConfig
-from router.file import router
+from kb.kb_router import router
 
 client = TestClient(router)
 
@@ -16,7 +16,7 @@ class Test(TestCase):
         docx_file_path = 'test.docx'
         with open(docx_file_path, 'rb') as docx_file:
             docx_content = docx_file.read()
-        resp = client.post('/files/upload/',
+        resp = client.post('/kb/upload/',
                            files={"file": ('example.docx', docx_content,
                                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document")})
         self.assertEqual(resp.status_code, 200)
