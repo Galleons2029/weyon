@@ -31,3 +31,8 @@ class XinferenceConfig(metaclass=BaseConfig):
     BASE_URL: str = "http://192.168.100.111:9997/v1"
     """Xinference接口url"""
     EMBEDDINGS: Union[str, list[str]] = "bge-m3"
+
+
+class DocxImageParserConfig(metaclass=BaseConfig):
+    IMG_SAVE_PATH: str = "./img"
+    IMG_PREFIX: str = "../img/"

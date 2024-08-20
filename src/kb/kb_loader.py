@@ -2,6 +2,7 @@ import os
 import uuid
 from typing import Iterable, Iterator
 
+from kb.kb_config import DocxImageParserConfig
 from kb.kb_core import Document
 
 
@@ -57,7 +58,8 @@ def convert_table_to_markdown(table):
 
 class DocxLoader(Iterable[Node]):
 
-    def __init__(self, file_path, img_path='img', img_prefix='../img/'):
+    def __init__(self, file_path, img_path=DocxImageParserConfig.IMG_SAVE_PATH,
+                 img_prefix=DocxImageParserConfig.IMG_PREFIX):
         self.img_prefix = img_prefix
         self.file_path = file_path
         self.filename = file_path.split('/')[-1]
