@@ -5,7 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
 import config
-from common.base_response import failed, AbsException
+from common import failed, AbsException
 from kb import kb_router
 
 config.logs_config()

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, UploadFile, File
 
-from common.base_response import BaseResponse, success
-from kb.file_service import (check_file_type,
-                             save_file,
-                             check_file_size)
+from common import BaseResponse, success
+from kb.file.file_service import (check_file_type,
+                                  save_file,
+                                  check_file_size)
 
 router = APIRouter(prefix="/kb",
                    tags=["Knowledge Base"]

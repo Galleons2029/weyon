@@ -3,7 +3,7 @@ from abc import abstractmethod
 from logging import getLogger
 from typing import Callable, Any
 
-from kb.embedding_excep import EmbeddingExistException, EmbeddingNotFoundException
+from kb.embedding.embedding_excep import EmbeddingExistException, EmbeddingNotFoundException
 
 logger = getLogger(__name__)
 

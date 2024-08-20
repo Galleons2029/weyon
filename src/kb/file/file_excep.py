@@ -1,6 +1,6 @@
 from abc import ABC
 
-from common.base_response import AbsException
+from common import AbsException
 
 
 class FileException(AbsException, ABC):

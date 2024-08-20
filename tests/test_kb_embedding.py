@@ -2,9 +2,9 @@ from unittest import TestCase
 
 from openai import Client
 
-from kb.embedding_excep import EmbeddingExistException
+from kb.embedding.embedding_excep import EmbeddingExistException
+from kb.embedding.kb_embedding import XinferenceEmbedding, get_embedding_model, register
 from kb.kb_config import XinferenceConfig
-from kb.kb_embedding import XinferenceEmbedding, get_embedding_model, register
 
 
 class TestXinferenceEmbedding(TestCase):

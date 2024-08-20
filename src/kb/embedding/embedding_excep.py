@@ -1,4 +1,4 @@
-from common.base_response import AbsException
+from common import AbsException
 
 
 class EmbeddingException(AbsException):
