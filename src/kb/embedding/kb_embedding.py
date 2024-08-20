@@ -3,6 +3,8 @@ from abc import abstractmethod
 from logging import getLogger
 from typing import Callable, Any
 
+from openai.types.embedding import Embedding
+
 from kb.embedding.embedding_excep import EmbeddingExistException, EmbeddingNotFoundException
 
 logger = getLogger(__name__)
@@ -14,11 +16,11 @@ class EmbeddingModel(abc.ABC, Callable[[str], Any]):
     def __init__(self, size: int):
         self.size = size
 
-    def __call__(self, query: str):
+    def __call__(self, query: str) -> Embedding:
         return self.embed(query)
 
     @abstractmethod
-    def embed(self, query: str):
+    def embed(self, query: str) -> Embedding:
         pass
 
 
@@ -52,7 +54,7 @@ class XinferenceEmbedding(EmbeddingModel):
     """XInference Embedding Model"""
     _TEST_TEXT: str = "Hello"
 
-    def embed(self, query: str):
+    def embed(self, query: str) -> Embedding:
         res = self._client.embeddings.create(model=self.model_uid,
                                              input=[query])
         return res.data[-1]
