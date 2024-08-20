@@ -3,13 +3,16 @@ from abc import abstractmethod
 from logging import getLogger
 from typing import Callable, Any
 
-logger = getLogger(__name__)
+from kb.embedding_excep import EmbeddingExistException, EmbeddingNotFoundException
 
-__embeddings = {}
+logger = getLogger(__name__)
 
 
 class EmbeddingModel(abc.ABC, Callable[[str], Any]):
     """文本向量化模型"""
+
+    def __init__(self, size: int):
+        self.size = size
 
     def __call__(self, query: str):
         return self.embed(query)
@@ -19,19 +22,30 @@ class EmbeddingModel(abc.ABC, Callable[[str], Any]):
         pass
 
 
-def register(model_id: str, model: Callable[[str], Any], overwrite=False):
+__embeddings: dict[str, EmbeddingModel] = {}
+
+
+def register(model_uid: str, model: EmbeddingModel):
     """
     将embedding模型注册到模型中
-    :param model_id:
-    :param model:
-    :param overwrite:
+    :param model_uid: 模型id
+    :param model: 模型
+    :exception EmbeddingExistException 模型已经存在
     :return:
     """
-    if model_id in __embeddings and not overwrite:
-        raise KeyError(
-            f"There has been a Embedding Model named {model_id},if you want overwrite you can use `overwrite=True`")
-    logger.info(f"Register EmbeddingModel-[{model_id}]")
-    __embeddings[model_id] = model
+    if model_uid in __embeddings:
+        raise EmbeddingExistException(model_uid=model_uid)
+    __embeddings[model_uid] = model
+
+
+def get_embedding_model(model_uid: str) -> EmbeddingModel:
+    if model_uid not in __embeddings:
+        raise EmbeddingNotFoundException(model_uid=model_uid)
+    return __embeddings[model_uid]
+
+
+def get_all_embeddings():
+    return __embeddings.copy()
 
 
 class XinferenceEmbedding(EmbeddingModel):
@@ -44,7 +58,7 @@ class XinferenceEmbedding(EmbeddingModel):
         return res.data[-1]
 
     def __init__(self, client, model_uid: str):
-        super().__init__()
+        super().__init__(size=0)
         from openai import Client
         assert isinstance(client, Client)
         self._client = client
@@ -58,3 +72,10 @@ class XinferenceEmbedding(EmbeddingModel):
         return XinferenceEmbedding(client=Client(api_key=api_key,
                                                  base_url=base_url),
                                    model_uid=model_uid)
+
+
+from kb.kb_config import XinferenceConfig
+
+register(XinferenceConfig.EMBEDDINGS, XinferenceEmbedding.from_api(api_key=XinferenceConfig.API_KEY,
+                                                                   base_url=XinferenceConfig.BASE_URL,
+                                                                   model_uid=XinferenceConfig.EMBEDDINGS))

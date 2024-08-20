@@ -4,6 +4,12 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
+class AbsException(Exception):
+    def __init__(self, msg=None):
+        super().__init__()
+        self.msg = msg or ""
+
+
 class ResponseCode(Enum):
     SUCCESS = 200
     FAILED = 400

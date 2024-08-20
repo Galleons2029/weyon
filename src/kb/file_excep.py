@@ -1,12 +1,13 @@
 from abc import ABC
 
+from common.base_response import AbsException
 
-class FileException(Exception, ABC):
+
+class FileException(AbsException, ABC):
     """文件异常"""
 
-    def __init__(self, filename, msg=None):
+    def __init__(self, filename):
         self.filename = filename
-        self.msg = msg or ""
 
 
 class FileSizeException(FileException):
