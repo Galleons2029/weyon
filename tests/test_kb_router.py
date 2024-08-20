@@ -18,7 +18,7 @@ class Test(TestCase):
         docx_file_path = Test.test_file
         with open(docx_file_path, 'rb') as docx_file:
             docx_content = docx_file.read()
-        resp = client.post('/kb/upload/Hello;bge-m3',
+        resp = client.post('/kb/Hello;bge-m3',
                            files={"file": ('example.docx', docx_content,
                                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document")})
         self.assertEqual(resp.status_code, 200)
@@ -35,3 +35,13 @@ class Test(TestCase):
         docx_file_path = Test.test_file
         kb_id = write_to_kb_with_docx(docx_file_path, "Hello;bge-m3")
         self.assertEqual("Hello;bge-m3", kb_id)
+
+    def test_query_kb(self):
+        resp = client.get("/kb/Hello;bge-m3",
+                          params={
+                              "query": "Hello"
+                          }
+                          )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json().get('code'), ResponseCode.SUCCESS.value)
+        self.assertGreaterEqual(len(resp.json().get('data')), 1)

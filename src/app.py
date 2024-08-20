@@ -21,6 +21,6 @@ async def file_exception(request: Request, exc: AbsException):
     return JSONResponse(status_code=400, content=content)
 
 
-@app.get("/")
+@app.get("/", summary="链接测试使用")
 async def root():
     return {"message": "Hello World"}

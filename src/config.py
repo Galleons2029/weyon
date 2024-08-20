@@ -56,7 +56,7 @@ def logs_config():
         return file_handler
 
     handlers = [__console_handle()]
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=logging.INFO,
                         format=basic_format,
                         style="{",
                         handlers=handlers)

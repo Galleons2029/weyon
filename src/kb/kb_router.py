@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, BackgroundTasks, Path
+from fastapi import APIRouter, UploadFile, File, BackgroundTasks, Path, Query
 
 from common import BaseResponse, success
 from kb.file.file_service import (check_file_type,
@@ -12,7 +12,9 @@ router = APIRouter(prefix="/kb",
                    )
 
 
-@router.post("/upload/{kb_id}")
+@router.put("/{kb_id}",
+            summary="知识库上传",
+            description="上传文档并且嵌入指定知识库")
 async def upload_file(background_tasks: BackgroundTasks,
                       kb_id: str = Path(..., example="Hello;bge-m3", description="知识库id"),
                       file: UploadFile = File(..., description="知识库文件，当前仅支持docx")) -> BaseResponse:
@@ -23,12 +25,29 @@ async def upload_file(background_tasks: BackgroundTasks,
     check_file_type(byte, file.filename)
     check_file_size(byte)
     file_id, save_path = save_file(byte, file.filename)
-    background_tasks.add_task(write_to_kb_with_docx, filepath=save_path, kb_id=kb_id)
+    background_tasks.add_task(write_to_kb_with_docx, filepath=save_path, kb_id=kb_id, filename=file.filename)
     return success(msg=f'{file.filename} upload success', data=file_id)
 
 
-def write_to_kb_with_docx(filepath: str, kb_id: str):
+@router.get("/{kb_id}",
+            summary="知识库查询",
+            description="指定知识库查询相关结果")
+async def query_kb(kb_id: str = Path(..., example="Hello;bge-m3", description="知识库id"),
+                   query: str = Query(..., example="Hello", description="查询相关文档")):
+    docs = get_rel_docs(query, kb_id)
+    data = [vars(doc) for doc in docs]
+    return success(msg=f"Query [{query}] has found some relative documents", data=data)
+
+
+def get_rel_docs(query: str, kb_id: str):
+    kb = get_kb_by_id(kb_id)
+    res = kb.query_doc(query, config={"limit": "3"})
+    return res
+
+
+def write_to_kb_with_docx(filepath: str, kb_id: str, filename: str):
     loader = DocxLoader(file_path=filepath)
+    loader.root.value = filename
     kb = get_kb_by_id(kb_id)
     for doc in loader.lazy_load():
         kb.add_kb_split(doc)

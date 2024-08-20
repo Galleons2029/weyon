@@ -176,3 +176,6 @@ venv.bak/
 
 ### Jebrains template
 .idea
+
+./src/img
+./src/upload
