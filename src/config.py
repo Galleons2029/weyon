@@ -11,17 +11,6 @@ class BaseConfig(type):
         return type.__new__(cls, name, bases, attrs)
 
 
-class UploadConfig(metaclass=BaseConfig):
-    # 上传文件保存路径
-    UPLOAD_SAVING_PATH: str = "upload"
-    #
-    MAX_FILE_SIZE: int = 100
-    # 允许的 MIME 类型
-    ALLOWED_MIME_TYPES = {
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ["docx"]
-    }
-
-
 def logs_config():
     import logging
 

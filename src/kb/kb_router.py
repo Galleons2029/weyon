@@ -10,12 +10,10 @@ router = APIRouter(prefix="/kb",
                    )
 
 
-@router.post("/upload/")
+@router.post("/upload")
 async def upload_file(file: UploadFile = File(...)) -> BaseResponse:
     """
     文件上传接口
-    param file: 上传的文件
-    return: 返回文件id
     """
     # 读取文件内容
     byte = await file.read()

@@ -4,7 +4,7 @@ from unittest import TestCase
 from fastapi.testclient import TestClient
 
 from common.base_response import ResponseCode
-from config import UploadConfig
+from kb.kb_config import UploadConfig
 from kb.kb_router import router
 
 client = TestClient(router)

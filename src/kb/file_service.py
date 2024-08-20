@@ -3,8 +3,8 @@ import uuid
 
 import magic
 
-from config import UploadConfig
 from kb.file_excep import FileTypeException, FileSizeException
+from kb.kb_config import UploadConfig
 
 # 创建一个 magic.Magic 对象，使用 mime 真类来检测 MIME 类型
 mime = magic.Magic(mime=True)
