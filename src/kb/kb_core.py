@@ -144,3 +144,14 @@ class VectorKB(KnowledgeBase):
         assert collection_info.config.params.vectors.size == size
         # 状态检查
         assert collection_info.status != CollectionStatus.RED
+
+
+__kb_register: dict[str, KnowledgeBase] = {}
+
+
+def get_kb_by_id(kb_id):
+    if kb_id in __kb_register:
+        return __kb_register[kb_id]
+    else:
+        __kb_register[kb_id] = VectorKB(kb_id)
+    return __kb_register[kb_id]

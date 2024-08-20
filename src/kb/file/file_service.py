@@ -36,7 +36,7 @@ def get_file_ext(filename) -> str:
     return filename.split('.')[-1].lower()
 
 
-def save_file(contents, filename) -> str:
+def save_file(contents, filename) -> tuple[str, str]:
     """
     保存文件到配置目录
     :param contents: 文件内容
@@ -49,4 +49,4 @@ def save_file(contents, filename) -> str:
                                   file_id + '.' + get_file_ext(filename))
     with open(save_file_path, 'wb') as f:
         f.write(contents)
-    return file_id
+    return file_id, save_file_path
