@@ -1,4 +1,5 @@
 import os
+import uuid
 from unittest import TestCase
 
 from fastapi.testclient import TestClient
@@ -33,7 +34,8 @@ class Test(TestCase):
 
     def test_write_to_kb_with_docx(self):
         docx_file_path = Test.test_file
-        kb_id = write_to_kb_with_docx(docx_file_path, "Hello;bge-m3", filename="test.docx")
+        kb_id = write_to_kb_with_docx(docx_file_path, "Hello;bge-m3", filename="test.docx",
+                                      file_id=uuid.uuid4().__str__())
         self.assertEqual("Hello;bge-m3", kb_id)
 
     def test_query_kb(self):
