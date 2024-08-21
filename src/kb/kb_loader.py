@@ -2,7 +2,7 @@ import os
 import uuid
 from typing import Iterable, Iterator
 
-from kb.kb_config import DocxImageParserConfig
+from kb.kb_config import DocxImageParserConfig, DocxMetadataConfig
 from kb.kb_core import Document
 
 
@@ -139,4 +139,6 @@ class DocxLoader(Iterable[Node]):
         for node in self:
             base_id += 1
             yield Document(page_content=node.get_value_from_tree(),
-                           metadata={'parent': node.parent.uuid, 'idx': base_id, 'doc': self.root.value})
+                           metadata={DocxMetadataConfig.PARENT_ID: node.parent.uuid,
+                                     DocxMetadataConfig.ORDER_BY: base_id,
+                                     DocxMetadataConfig.DOC_FILENAME: self.root.value})

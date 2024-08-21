@@ -36,3 +36,11 @@ class XinferenceConfig(metaclass=BaseConfig):
 class DocxImageParserConfig(metaclass=BaseConfig):
     IMG_SAVE_PATH: str = "./img"
     IMG_PREFIX: str = "../img/"
+
+
+class DocxMetadataConfig:
+    METADATA = 'metadata'
+    PARENT_ID = 'parent'
+    ORDER_BY = 'idx'
+    PAGE_CONTENT = 'page_content'
+    DOC_FILENAME = 'doc'

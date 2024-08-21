@@ -173,6 +173,9 @@ class VectorKB(KnowledgeBase):
         # 状态检查
         assert collection_info.status != CollectionStatus.RED
 
+    def scroll(self, *args, **kwargs):
+        return client.scroll(collection_name=self.kb_id, *args, **kwargs)
+
 
 __kb_register: dict[str, KnowledgeBase] = {}
 
