@@ -19,7 +19,7 @@ router = APIRouter(prefix="/kb",
             summary="知识库上传",
             description="上传文档并且嵌入指定知识库，返回文档id", )
 async def upload_file(background_tasks: BackgroundTasks,
-                      kb_id: str = Path(..., example="Hello;bge-m3", description="知识库id"),
+                      kb_id: str = Path(..., examples=["Hello;bge-m3"], description="知识库id"),
                       file: UploadFile = File(..., description="知识库文件，当前仅支持docx")) -> BaseResponse:
     """
     文件上传接口
@@ -36,8 +36,8 @@ async def upload_file(background_tasks: BackgroundTasks,
 @router.get("/{kb_id}",
             summary="知识库相似查询",
             description="指定知识库查询相关结果，当前支持\n - 数量限制\n - 指定文档\n - 使用父子关联查询")
-async def query_kb(kb_id: str = Path(..., example="Hello;bge-m3", description="知识库id"),
-                   query: str = Query(..., example="Hello", description="查询相关文档"),
+async def query_kb(kb_id: str = Path(..., examples=["Hello;bge-m3"], description="知识库id"),
+                   query: str = Query(..., examples=["Hello"], description="查询相关文档"),
                    docs: list[str] = Query(None, description="指定相关文档id，上传时返回，具体可见上传文档接口 "),
                    limit: int = Query(3, description="查询条数"),
                    relevant: bool = Query(False, description="是否使用关联父子文档")):
@@ -49,7 +49,7 @@ async def query_kb(kb_id: str = Path(..., example="Hello;bge-m3", description="�
 @router.post("/{kb_id}",
              summary="知识库条件查询",
              description="筛选查询知识库中的数据")
-async def filter_kb(kb_id: str = Path(..., example="Hello;bge-m3", description="知识库id"),
+async def filter_kb(kb_id: str = Path(..., examples=["Hello;bge-m3"], description="知识库id"),
                     condition: dict[str, list[str]] = Body(None, description="过滤条件，前面为元数据中的键，后买了为匹配的值。"
                                                                              "\n最终条件为(key1.value in (targets1) and key2.value in (targets2))"),
                     limit: int = Query(10, description="限制条数"),

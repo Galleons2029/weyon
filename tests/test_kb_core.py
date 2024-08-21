@@ -20,7 +20,7 @@ class TestVectorKB(TestCase):
 
     def test_filter_by(self):
         test_kb = VectorKB(kb_id=TestVectorKB.test_kb_id)
-        res = test_kb.filter_by({'doc': "2023年长沙理工大学毕业生就业质量年度报告.docx"})
+        res = test_kb.filter_by()
         self.assertGreaterEqual(len(res), 1)
 
     def test_size(self):

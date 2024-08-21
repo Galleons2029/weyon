@@ -32,4 +32,4 @@ class TestXinferenceEmbedding(TestCase):
                                           model_uid=XinferenceConfig.EMBEDDINGS)
         with self.assertRaises(EmbeddingExistException) as cm:
             register(model_uid=XinferenceConfig.EMBEDDINGS, model=em)
-        self.assertEquals(cm.exception.model_uid, XinferenceConfig.EMBEDDINGS)
+        self.assertEqual(cm.exception.model_uid, XinferenceConfig.EMBEDDINGS)
