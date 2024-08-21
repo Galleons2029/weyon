@@ -42,24 +42,12 @@ async def query_kb(kb_id: str = Path(..., example="Hello;bge-m3", description="ç
 
 
 def get_rel_docs(query: str, kb_id: str, limit: int, docs: list[str] = None):
-    config = {'limit': limit}
-    from qdrant_client import models
     if docs:
-        if len(docs) == 0:
-            return []
-        else:
-            config['query_filter'] = models.Filter(
-                must=[
-                    models.FieldCondition(
-                        key='metadata.doc',
-                        match=models.MatchAny(
-                            any=docs
-                        )
-                    )
-                ]
-            )
+        filter_condition = {'doc': docs}
+    else:
+        filter_condition = None
     kb = get_kb_by_id(kb_id)
-    res = kb.query_doc(query, config=config)
+    res = kb.query_doc(query, limit=limit, filter_condition=filter_condition)
     return res
 
 

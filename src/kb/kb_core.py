@@ -6,7 +6,7 @@ import functools
 import uuid
 from abc import abstractmethod
 from logging import getLogger
-from typing import Tuple, Union
+from typing import Tuple, Union, Any
 
 from qdrant_client import QdrantClient, models
 from qdrant_client.http.models import CollectionStatus
@@ -40,11 +40,12 @@ class KnowledgeBase(abc.ABC):
         pass
 
     @abstractmethod
-    def query_doc(self, query: str, config=None) -> list[Document]:
+    def query_doc(self, query: str, filter_condition=None, limit=3, *args, **kwargs) -> list[Document]:
         """
         查询知识库相关信息
         :param query: 查询变量
-        :param config: 查询配置
+        :param filter_condition: 查询过滤
+        :param limit: 查询数量限制
         :return: 返回查询到的相关信息
         """
         pass
@@ -89,16 +90,43 @@ class VectorKB(KnowledgeBase):
         return res
 
     @ensure_kb_exist
-    def query_doc(self, query: str, config=None) -> list[Document]:
-        if config is None:
-            config = {}
+    def query_doc(self, query: str, filter_condition: dict[str, Any] = None, limit=3, *args, **kwargs) -> list[
+        Document]:
+        """
+        查询过滤
+        :param query: 查询字符串
+        :param filter_condition: 过滤条件，字典类型，前面为metadata中的字段，后面为匹配的值，默认为等价匹配，如果是列表则范围匹配，所有条件需要同时成立
+        :param limit: 查询数据数量限制
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        query_filter = None
+        if filter_condition:
+            if len(filter_condition) == 0:
+                return []
+            else:
+                query_filter = models.Filter(
+                    must=[VectorKB.build_filter(f'metadata.{key}', match_value)
+                          for key, match_value in filter_condition.items()])
+
         em = self.__get_embedding()(query)
         res = client.search(
             collection_name=self.kb_id,
             query_vector=em.embedding,
-            **config
+            limit=limit,
+            query_filter=query_filter,
+            **kwargs
         )
         return [Document(point.payload['page_content'], point.payload['metadata']) for point in res]
+
+    @staticmethod
+    def build_filter(key, match_value):
+        if isinstance(match_value, list):
+            match = models.MatchAny(any=match_value)
+        else:
+            match = models.MatchValue(value=match_value)
+        return models.FieldCondition(key=key, match=match)
 
     def __init__(self, kb_id: Union[str, Tuple[str, str]]):
         """
