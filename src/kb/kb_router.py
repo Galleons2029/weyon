@@ -1,4 +1,6 @@
-from fastapi import APIRouter, UploadFile, File, BackgroundTasks, Path, Query
+from typing import Any
+
+from fastapi import APIRouter, UploadFile, File, BackgroundTasks, Path, Query, Body
 
 from common import BaseResponse, success
 from kb.doc_retriever import get_doc_kb_by_id
@@ -32,7 +34,7 @@ async def upload_file(background_tasks: BackgroundTasks,
 
 
 @router.get("/{kb_id}",
-            summary="知识库查询",
+            summary="知识库相似查询",
             description="指定知识库查询相关结果，当前支持\n - 数量限制\n - 指定文档\n - 使用父子关联查询")
 async def query_kb(kb_id: str = Path(..., example="Hello;bge-m3", description="知识库id"),
                    query: str = Query(..., example="Hello", description="查询相关文档"),
@@ -42,6 +44,24 @@ async def query_kb(kb_id: str = Path(..., example="Hello;bge-m3", description="�
     docs = get_rel_docs(query, kb_id, limit, docs, relevant)
     data = [vars(doc) for doc in docs]
     return success(msg=f"Query [{query}] has found some relative documents", data=data)
+
+
+@router.post("/{kb_id}",
+             summary="知识库条件查询",
+             description="筛选查询知识库中的数据")
+async def filter_kb(kb_id: str = Path(..., example="Hello;bge-m3", description="知识库id"),
+                    condition: dict[str, list[str]] = Body(None, description="过滤条件，前面为元数据中的键，后买了为匹配的值。"
+                                                                             "\n最终条件为(key1.value in (targets1) and key2.value in (targets2))"),
+                    limit: int = Query(10, description="限制条数"),
+                    offset: int = Query(0, description="偏移量")):
+    docs = scroll_kb_with_filter(kb_id, condition, limit, offset)
+    data = [vars(doc) for doc in docs]
+    return success(msg=f"Filter from knowledge base {kb_id}", data=data)
+
+
+def scroll_kb_with_filter(kb_id: str, condition: dict[str, Any] = None, limit: int = 10, offset=0):
+    kb = get_kb_by_id(kb_id)
+    return kb.filter_by(filter_condition=condition, limit=limit, offset=offset)
 
 
 def get_rel_docs(query: str, kb_id: str, limit: int, docs: list[str] = None, relevant=False):
