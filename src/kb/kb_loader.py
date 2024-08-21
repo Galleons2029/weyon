@@ -1,4 +1,5 @@
 import os
+import random
 import uuid
 from typing import Iterable, Iterator
 
@@ -135,7 +136,7 @@ class DocxLoader(Iterable[Node]):
         yield from traverse(self.root)
 
     def lazy_load(self) -> Iterator[Document]:
-        base_id = uuid.uuid5(uuid.uuid4(), self.file_path).int
+        base_id = random.randint(-2 ** 31, 2 ** 31 - 1) * 100
         for node in self:
             base_id += 1
             yield Document(page_content=node.get_value_from_tree(),
