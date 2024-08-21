@@ -77,7 +77,7 @@ class DocRetriever(KnowledgeBase):
 def get_doc_kb_by_id(kb_id: str):
     from kb.kb_core import __kb_register, get_kb_by_id
     vkb = get_kb_by_id(kb_id)
-    key = f'doc_{kb_id}'
+    key = f'{kb_id};doc'
     if key not in __kb_register:
         __kb_register[key] = DocRetriever(vkb)
     return get_kb_by_id(key)
