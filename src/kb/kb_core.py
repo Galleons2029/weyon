@@ -50,6 +50,17 @@ class KnowledgeBase(abc.ABC):
         """
         pass
 
+    @abstractmethod
+    def filter_by(self, filter_condition: None, limit=3, offset=0, *arg, **kwargs):
+        """
+        知识库数据的条件过滤
+        :param filter_condition: 过滤文档片段的过滤条件
+        :param limit: 条数限制
+        :param offset: 偏移量
+        :return: 返回符合条件的文档
+        """
+        pass
+
 
 def parse_kb_id(kb_id: str) -> Tuple[str, str]:
     """
@@ -73,6 +84,27 @@ def ensure_kb_exist(method):
 
 class VectorKB(KnowledgeBase):
     """向量化的知识库"""
+
+    @ensure_kb_exist
+    def filter_by(self, filter_condition: Union[dict[str, Any], models.Filter] = None, limit=3, offset=0, *arg,
+                  **kwargs):
+        query_filter = None
+        if filter_condition:
+            if len(filter_condition) == 0:
+                return []
+            else:
+                query_filter = models.Filter(
+                    must=[VectorKB.build_filter(f'metadata.{key}', match_value)
+                          for key, match_value in filter_condition.items()])
+
+        res = client.scroll(
+            collection_name=self.kb_id,
+            limit=limit,
+            scroll_filter=query_filter,
+            offset=offset,
+            **kwargs
+        )
+        return [Document(point.payload['page_content'], point.payload['metadata']) for point in res[0]]
 
     @ensure_kb_exist
     def add_kb_split(self, doc: Document):

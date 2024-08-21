@@ -8,6 +8,9 @@ from kb.kb_core import Document, VectorKB, KnowledgeBase
 
 class DocRetriever(KnowledgeBase):
 
+    def filter_by(self, filter_condition: None, limit=3, offset=0, *arg, **kwargs):
+        return self.vector_kb.filter_by(filter_condition, limit, offset, *arg, **kwargs)
+
     def add_kb_split(self, doc: Document):
         self.vector_kb.add_kb_split(doc)
 
