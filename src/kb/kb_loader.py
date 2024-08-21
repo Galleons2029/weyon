@@ -139,4 +139,4 @@ class DocxLoader(Iterable[Node]):
         for node in self:
             base_id += 1
             yield Document(page_content=node.get_value_from_tree(),
-                           metadata={'parent': node.parent.uuid, 'idx': base_id})
+                           metadata={'parent': node.parent.uuid, 'idx': base_id, 'doc': self.root.value})

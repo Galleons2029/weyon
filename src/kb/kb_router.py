@@ -33,15 +33,33 @@ async def upload_file(background_tasks: BackgroundTasks,
             summary="知识库查询",
             description="指定知识库查询相关结果")
 async def query_kb(kb_id: str = Path(..., example="Hello;bge-m3", description="知识库id"),
-                   query: str = Query(..., example="Hello", description="查询相关文档")):
-    docs = get_rel_docs(query, kb_id)
+                   query: str = Query(..., example="Hello", description="查询相关文档"),
+                   docs: list[str] = Query(None, description="指定相关文档"),
+                   limit: int = Query(3, description="查询条数")):
+    docs = get_rel_docs(query, kb_id, limit, docs)
     data = [vars(doc) for doc in docs]
     return success(msg=f"Query [{query}] has found some relative documents", data=data)
 
 
-def get_rel_docs(query: str, kb_id: str):
+def get_rel_docs(query: str, kb_id: str, limit: int, docs: list[str] = None):
+    config = {'limit': limit}
+    from qdrant_client import models
+    if docs:
+        if len(docs) == 0:
+            return []
+        else:
+            config['query_filter'] = models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key='metadata.doc',
+                        match=models.MatchAny(
+                            any=docs
+                        )
+                    )
+                ]
+            )
     kb = get_kb_by_id(kb_id)
-    res = kb.query_doc(query, config={"limit": "3"})
+    res = kb.query_doc(query, config=config)
     return res
 
 
