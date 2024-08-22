@@ -40,7 +40,7 @@ class KnowledgeBase(abc.ABC):
         pass
 
     @abstractmethod
-    def query_doc(self, query: str, filter_condition=None, limit=3, *args, **kwargs) -> list[Document]:
+    def query_doc(self, *args, query: str, filter_condition=None, limit=3, **kwargs) -> list[Document]:
         """
         查询知识库相关信息
         :param query: 查询变量
@@ -51,7 +51,7 @@ class KnowledgeBase(abc.ABC):
         pass
 
     @abstractmethod
-    def filter_by(self, filter_condition: None, limit=3, offset=0, *arg, **kwargs):
+    def filter_by(self, *arg, filter_condition: None, limit=3, offset=0, **kwargs):
         """
         知识库数据的条件过滤
         :param filter_condition: 过滤文档片段的过滤条件
@@ -86,7 +86,7 @@ class VectorKB(KnowledgeBase):
     """向量化的知识库"""
 
     @ensure_kb_exist
-    def filter_by(self, filter_condition: Union[dict[str, Any], models.Filter] = None, limit=3, offset=0, *arg,
+    def filter_by(self, *arg, filter_condition: Union[dict[str, Any], models.Filter] = None, limit=3, offset=0,
                   **kwargs):
         query_filter = None
         if filter_condition:
@@ -122,15 +122,13 @@ class VectorKB(KnowledgeBase):
         return res
 
     @ensure_kb_exist
-    def query_doc(self, query: str, filter_condition: dict[str, Any] = None, limit=3, *args, **kwargs) -> list[
+    def query_doc(self, *args, query: str, filter_condition: dict[str, Any] = None, limit=3, **kwargs) -> list[
         Document]:
         """
         查询过滤
         :param query: 查询字符串
         :param filter_condition: 过滤条件，字典类型，前面为metadata中的字段，后面为匹配的值，默认为等价匹配，如果是列表则范围匹配，所有条件需要同时成立
         :param limit: 查询数据数量限制
-        :param args:
-        :param kwargs:
         :return:
         """
         query_filter = None

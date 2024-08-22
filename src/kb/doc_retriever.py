@@ -8,14 +8,17 @@ from kb.kb_core import Document, VectorKB, KnowledgeBase
 
 class DocRetriever(KnowledgeBase):
 
-    def filter_by(self, filter_condition: None, limit=3, offset=0, *arg, **kwargs):
+    def filter_by(self, *arg, filter_condition: None, limit=3, offset=0, **kwargs):
         return self.vector_kb.filter_by(filter_condition, limit, offset, *arg, **kwargs)
 
     def add_kb_split(self, doc: Document):
         self.vector_kb.add_kb_split(doc)
 
-    def query_doc(self, query: str, filter_condition=None, limit=3, *args, **kwargs) -> list[Document]:
-        chunks = self.vector_kb.query_doc(query=query, filter_condition=filter_condition, limit=limit * 3, *args,
+    def query_doc(self, *args, query: str, filter_condition=None, limit=3, **kwargs) -> list[Document]:
+        chunks = self.vector_kb.query_doc(query=query,
+                                          filter_condition=filter_condition,
+                                          limit=limit * 3,
+                                          *args,
                                           **kwargs)
         doc_rel = self._remove_duplicates(chunk.metadata.get(DocxMetadataConfig.PARENT_ID) for chunk in chunks)
         docs = self._get_docs_by_parent(doc_rel)

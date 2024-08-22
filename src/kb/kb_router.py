@@ -1,3 +1,4 @@
+"""知识库API"""
 from typing import Any
 
 from fastapi import APIRouter, UploadFile, File, BackgroundTasks, Path, Query, Body
@@ -29,7 +30,10 @@ async def upload_file(background_tasks: BackgroundTasks,
     check_file_size(byte)
     file_id, save_path = save_file(byte, file.filename)
     background_tasks.add_task(write_to_kb_with_docx,
-                              filepath=save_path, kb_id=kb_id, filename=file.filename, file_id=file_id)
+                              filepath=save_path,
+                              kb_id=kb_id,
+                              filename=file.filename,
+                              file_id=file_id)
     return success(msg=f'{file.filename} upload success', data=file_id)
 
 
@@ -41,7 +45,8 @@ async def query_kb(kb_id: str = Path(..., examples=["Hello;bge-m3"], description
                    docs: list[str] = Query(None, description="指定相关文档id，上传时返回，具体可见上传文档接口 "),
                    limit: int = Query(3, description="查询条数"),
                    relevant: bool = Query(False, description="是否使用关联父子文档")):
-    docs = get_rel_docs(query, kb_id, limit, docs, relevant)
+    """知识库的向是查寻"""
+    docs = get_rel_docs_from_kb(query, kb_id, limit, docs, relevant)
     data = [vars(doc) for doc in docs]
     return success(msg=f"Query [{query}] has found some relative documents", data=data)
 
@@ -49,22 +54,27 @@ async def query_kb(kb_id: str = Path(..., examples=["Hello;bge-m3"], description
 @router.post("/{kb_id}",
              summary="知识库条件查询",
              description="筛选查询知识库中的数据")
-async def filter_kb(kb_id: str = Path(..., examples=["Hello;bge-m3"], description="知识库id"),
-                    condition: dict[str, list[str]] = Body(None, description="过滤条件，前面为元数据中的键，后买了为匹配的值。"
-                                                                             "\n最终条件为(key1.value in (targets1) and key2.value in (targets2))"),
+async def filter_kb(kb_id: str = Path(..., examples=["Hello;bge-m3"],
+                                      description="知识库id"),
+                    condition: dict[str, list[str]] = Body(None,
+                                                           description="过滤条件，前面为元数据中的键，后买了为匹配的值。"
+                                                                       "\n最终条件为(key1.value in (targets1) and key2.value in (targets2))"),
                     limit: int = Query(10, description="限制条数"),
                     offset: int = Query(0, description="偏移量")):
+    """知识库的条件查询"""
     docs = scroll_kb_with_filter(kb_id, condition, limit, offset)
     data = [vars(doc) for doc in docs]
     return success(msg=f"Filter from knowledge base {kb_id}", data=data)
 
 
 def scroll_kb_with_filter(kb_id: str, condition: dict[str, Any] = None, limit: int = 10, offset=0):
+    """遍历检索知识库，可以按条件查询"""
     kb = get_kb_by_id(kb_id)
     return kb.filter_by(filter_condition=condition, limit=limit, offset=offset)
 
 
-def get_rel_docs(query: str, kb_id: str, limit: int, docs: list[str] = None, relevant=False):
+def get_rel_docs_from_kb(query: str, kb_id: str, limit: int, docs: list[str] = None, relevant=False):
+    """从知识库中获取相关文档片段"""
     if docs:
         filter_condition = {DocxMetadataConfig.FILE_ID: docs}
     else:
@@ -72,11 +82,12 @@ def get_rel_docs(query: str, kb_id: str, limit: int, docs: list[str] = None, rel
     kb = get_kb_by_id(kb_id)
     if relevant:
         kb = get_doc_kb_by_id(kb_id)
-    res = kb.query_doc(query, limit=limit, filter_condition=filter_condition)
+    res = kb.query_doc(query=query, limit=limit, filter_condition=filter_condition)
     return res
 
 
 def write_to_kb_with_docx(filepath: str, kb_id: str, filename: str, file_id: str):
+    """docx文档写入知识库"""
     loader = DocxLoader(file_path=filepath)
     loader.root.value = filename
     kb = get_kb_by_id(kb_id)

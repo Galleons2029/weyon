@@ -7,6 +7,7 @@ class FileException(AbsException, ABC):
     """文件异常"""
 
     def __init__(self, filename):
+        super().__init__(f"FileException with file {filename}")
         self.filename = filename
 
 

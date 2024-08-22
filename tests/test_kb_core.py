@@ -15,7 +15,7 @@ class TestVectorKB(TestCase):
 
     def test_query_doc(self):
         test_kb = VectorKB(kb_id=TestVectorKB.test_kb_id)
-        docs = test_kb.query_doc("Hello")
+        docs = test_kb.query_doc(query="Hello")
         self.assertGreaterEqual(len(docs), 1)
 
     def test_filter_by(self):
