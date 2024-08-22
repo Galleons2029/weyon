@@ -13,7 +13,7 @@ from qdrant_client.http.models import CollectionStatus
 
 from kb.embedding.embedding_excep import EmbeddingNotFoundException
 from kb.embedding.kb_embedding import get_embedding_model, EmbeddingModel
-from kb.kb_config import QdrantConfig
+from kb.kb_config import QdrantConfig, DocxMetadataConfig
 
 client = QdrantClient(location=QdrantConfig.LOCATION)
 
@@ -195,6 +195,18 @@ class VectorKB(KnowledgeBase):
             client.create_collection(
                 collection_name=kb_id,
                 vectors_config=models.VectorParams(size=size, distance=models.Distance.COSINE),
+            )
+            # 父亲节点id，加速父子查询
+            client.create_payload_index(
+                collection_name=kb_id,
+                field_name=f"metadata.{DocxMetadataConfig.PARENT_ID}",
+                field_schema="keyword"
+            )
+            # 文件id，加速文件过滤
+            client.create_payload_index(
+                collection_name=kb_id,
+                field_name=f"metadata.{DocxMetadataConfig.FILE_ID}",
+                field_schema="keyword"
             )
         # 无论创不创建都需要检查状态，因为我们保证创建之后没问题。
         collection_info = client.get_collection(kb_id)

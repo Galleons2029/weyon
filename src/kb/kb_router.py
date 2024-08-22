@@ -1,4 +1,5 @@
 """知识库API"""
+import logging
 from typing import Any
 
 from fastapi import APIRouter, UploadFile, File, BackgroundTasks, Path, Query, Body
@@ -14,6 +15,8 @@ from kb.kb_loader import DocxLoader
 
 router = APIRouter(prefix="/kb",
                    tags=["Knowledge Base"])
+
+logger = logging.getLogger(__name__)
 
 
 @router.put("/{kb_id}",
@@ -94,4 +97,5 @@ def write_to_kb_with_docx(filepath: str, kb_id: str, filename: str, file_id: str
     for doc in loader.lazy_load():
         doc.metadata[DocxMetadataConfig.FILE_ID] = file_id
         kb.add_kb_split(doc)
+    logger.info(f"Finish the doc-[{filename}] embed to kb-[{kb_id}]")
     return kb_id
