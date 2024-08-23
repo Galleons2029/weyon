@@ -1,6 +1,5 @@
 """启动脚本，注意启动位置必须和app同一级目录，或者将该目录添加到PYTHONPATH中"""
 import logging
-from datetime import date
 
 from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
@@ -11,12 +10,12 @@ from common import failed, AbsException
 from kb import kb_router
 
 config.logs_config()
-app = FastAPI(title='WeYon AI Open Platform', version='0.1.0')
+app = FastAPI(title='WeYon AI Open Platform', version='0.1.0', root_path="/api/v1")
 
 app.include_router(kb_router.router)
 
 logger = logging.getLogger(__name__)
-logger.addHandler(config.file_handle(f'{date.today()}.log'))
+logger.addHandler(config.file_handle(tag="EXC"))
 logger.setLevel(logging.DEBUG)
 
 

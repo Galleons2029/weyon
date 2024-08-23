@@ -45,3 +45,12 @@ class Test(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json().get('code'), ResponseCode.SUCCESS.value)
         self.assertGreaterEqual(len(resp.json().get('data')), 1)
+
+    def test_delete_doc(self):
+        resp = client.delete('/kb/Hello;bge-m3',
+                             params={
+                                 "doc_ids": "dsfasdfadsfa"
+                             })
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json().get('code'), ResponseCode.SUCCESS.value)
+        self.assertEqual(resp.json().get('msg'), "成功删除")

@@ -45,7 +45,7 @@ class DocxImageParserConfig(metaclass=BaseConfig):
     """
 
 
-class DocxMetadataConfig:
+class DocxSchema:
     """向量数据库中payload的结构"""
     METADATA = 'metadata'
     """元数据：字典"""

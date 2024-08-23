@@ -26,3 +26,8 @@ class TestVectorKB(TestCase):
     def test_size(self):
         test_kb = VectorKB(kb_id=TestVectorKB.test_kb_id)
         self.assertEqual(1024, test_kb.size)
+
+    def test_remove_kb_split(self):
+        test_kb = VectorKB(kb_id=TestVectorKB.test_kb_id)
+        res = test_kb.remove_kb_split(ids="7425e378-985a-4b13-acac-c7ac846bfe43")
+        self.assertTrue(res)

@@ -9,11 +9,12 @@ from logging import getLogger
 from typing import Tuple, Union, Any
 
 from qdrant_client import QdrantClient, models
-from qdrant_client.http.models import CollectionStatus
+from qdrant_client.http.models import CollectionStatus, UpdateStatus
 
 from kb.embedding.embedding_excep import EmbeddingNotFoundException
 from kb.embedding.kb_embedding import get_embedding_model, EmbeddingModel
-from kb.kb_config import QdrantConfig, DocxMetadataConfig
+from kb.kb_config import QdrantConfig, DocxSchema
+from kb.kb_excep import InvalidKBIdException
 
 client = QdrantClient(location=QdrantConfig.LOCATION)
 
@@ -29,6 +30,17 @@ class Document:
 
 class KnowledgeBase(abc.ABC):
     """知识库的抽象类"""
+
+    @abstractmethod
+    def remove_kb_split(self, ids: Union[str, list[str]]) -> bool:
+        """
+        从知识库中删除指定文档
+        Args:
+            ids: 文档id（可以一并删除多个）
+
+        Returns:
+            是否删除成功
+        """
 
     @abstractmethod
     def add_kb_split(self, doc: Document):
@@ -100,6 +112,18 @@ def ensure_kb_exist(method):
 class VectorKB(KnowledgeBase):
     """向量化的知识库"""
 
+    def remove_kb_split(self, ids: Union[str, list[str]]) -> bool:
+        ids = [ids] if isinstance(ids, str) else ids
+        res = client.delete(
+            collection_name=self.kb_id,
+            points_selector=models.FilterSelector(
+                filter=models.Filter(
+                    must=[VectorKB.build_filter(f'{DocxSchema.METADATA}.{DocxSchema.FILE_ID}', file_id)
+                          for file_id in ids])
+            )
+        )
+        return res.status == UpdateStatus.COMPLETED
+
     @ensure_kb_exist
     def filter_by(self, *arg, filter_condition: Union[dict[str, Any], models.Filter] = None, limit=3, offset=0,
                   **kwargs):
@@ -109,7 +133,7 @@ class VectorKB(KnowledgeBase):
                 return []
             else:
                 query_filter = models.Filter(
-                    must=[VectorKB.build_filter(f'metadata.{key}', match_value)
+                    must=[VectorKB.build_filter(f'{DocxSchema.METADATA}.{key}', match_value)
                           for key, match_value in filter_condition.items()])
 
         res = client.scroll(
@@ -119,7 +143,8 @@ class VectorKB(KnowledgeBase):
             offset=offset,
             **kwargs
         )
-        return [Document(point.payload['page_content'], point.payload['metadata']) for point in res[0]]
+        return [Document(point.payload[DocxSchema.PAGE_CONTENT], point.payload[DocxSchema.METADATA]) for
+                point in res[0]]
 
     @ensure_kb_exist
     def add_kb_split(self, doc: Document):
@@ -155,7 +180,7 @@ class VectorKB(KnowledgeBase):
                 return []
             else:
                 query_filter = models.Filter(
-                    must=[VectorKB.build_filter(f'metadata.{key}', match_value)
+                    must=[VectorKB.build_filter(f'{DocxSchema.METADATA}.{key}', match_value)
                           for key, match_value in filter_condition.items()])
 
         em = self.__get_embedding()(query)
@@ -166,7 +191,8 @@ class VectorKB(KnowledgeBase):
             query_filter=query_filter,
             **kwargs
         )
-        return [Document(point.payload['page_content'], point.payload['metadata']) for point in res]
+        return [Document(point.payload[DocxSchema.PAGE_CONTENT], point.payload[DocxSchema.METADATA]) for
+                point in res]
 
     @staticmethod
     def build_filter(key, match_value):
@@ -185,7 +211,10 @@ class VectorKB(KnowledgeBase):
         if isinstance(kb_id, str):
             self.kb_id: str = kb_id
             """知识库id"""
-            kb_name, embedding_model_id = parse_kb_id(kb_id)
+            try:
+                kb_name, embedding_model_id = parse_kb_id(kb_id)
+            except ValueError as e:
+                raise InvalidKBIdException(kb_id=kb_id)
         else:
             kb_name, embedding_model_id = kb_id
             self.kb_id: str = f"{kb_name};{embedding_model_id}"
@@ -197,7 +226,7 @@ class VectorKB(KnowledgeBase):
             self.__get_embedding()
         except EmbeddingNotFoundException as e:
             _logger.warning(f"The EmbeddingModel-[{e.model_uid}] model used by KB-[{kb_name}] was not register. "
-                           f"Please ensure is has been register before using KB-[{kb_name}]")
+                            f"Please ensure is has been register before using KB-[{kb_name}]")
 
     def __get_embedding(self) -> EmbeddingModel:
         return get_embedding_model(model_uid=self.embedding_model_id)
@@ -218,13 +247,13 @@ class VectorKB(KnowledgeBase):
             # 父亲节点id，加速父子查询
             client.create_payload_index(
                 collection_name=kb_id,
-                field_name=f"metadata.{DocxMetadataConfig.PARENT_ID}",
+                field_name=f"{DocxSchema.METADATA}.{DocxSchema.PARENT_ID}",
                 field_schema="keyword"
             )
             # 文件id，加速文件过滤
             client.create_payload_index(
                 collection_name=kb_id,
-                field_name=f"metadata.{DocxMetadataConfig.FILE_ID}",
+                field_name=f"{DocxSchema.METADATA}.{DocxSchema.FILE_ID}",
                 field_schema="keyword"
             )
         # 无论创不创建都需要检查状态，因为我们保证创建之后没问题。

@@ -63,10 +63,10 @@ def console_handle():
     return console_handler
 
 
-def file_handle(filename=f'{date.today()}.log'):
+def file_handle(tag="L", filename=None, ext="log"):
     """文件日志记录"""
     os.makedirs(LogConfig.LOG_FILE_PATH, exist_ok=True)
-    file_path = os.path.join(LogConfig.LOG_FILE_PATH, filename)
+    file_path = os.path.join(LogConfig.LOG_FILE_PATH, filename or f"{date.today()}_{tag}.{ext}")
     file_handler = logging.FileHandler(file_path, encoding=LogConfig.LOG_ENCODING)
     file_handler.setFormatter(logging.Formatter(LogConfig.BASIC_FORMAT, style=LogConfig.LOG_STYLE))
     return file_handler
