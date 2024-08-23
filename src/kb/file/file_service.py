@@ -39,9 +39,12 @@ def get_file_ext(filename) -> str:
 def save_file(contents, filename) -> tuple[str, str]:
     """
     保存文件到配置目录
-    :param contents: 文件内容
-    :param filename: 上传时的文件名
-    :return: 文件id
+    Args:
+        contents: 文件内容
+        filename: 上传时的文件名
+
+    Returns:
+        文件id
     """
     file_id = uuid.uuid4().__str__()
     os.makedirs(UploadConfig.UPLOAD_SAVING_PATH, exist_ok=True)

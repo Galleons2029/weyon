@@ -17,7 +17,7 @@ from kb.kb_config import QdrantConfig, DocxMetadataConfig
 
 client = QdrantClient(location=QdrantConfig.LOCATION)
 
-logger = getLogger(__name__)
+_logger = getLogger(__name__)
 
 
 class Document:
@@ -34,8 +34,8 @@ class KnowledgeBase(abc.ABC):
     def add_kb_split(self, doc: Document):
         """
         添加知识片段（知识块）
-        :param doc: 知识块内容
-        :return:
+        Args:
+            doc: 知识块内容
         """
         pass
 
@@ -43,10 +43,13 @@ class KnowledgeBase(abc.ABC):
     def query_doc(self, *args, query: str, filter_condition=None, limit=3, **kwargs) -> list[Document]:
         """
         查询知识库相关信息
-        :param query: 查询变量
-        :param filter_condition: 查询过滤
-        :param limit: 查询数量限制
-        :return: 返回查询到的相关信息
+        Args:
+            query: 查询变量
+            filter_condition: 查询过滤
+            limit: 查询数量限制
+
+        Returns:
+            返回查询到的相关信息
         """
         pass
 
@@ -54,20 +57,32 @@ class KnowledgeBase(abc.ABC):
     def filter_by(self, *arg, filter_condition: None, limit=3, offset=0, **kwargs):
         """
         知识库数据的条件过滤
-        :param filter_condition: 过滤文档片段的过滤条件
-        :param limit: 条数限制
-        :param offset: 偏移量
-        :return: 返回符合条件的文档
+        Args:
+            filter_condition: 过滤文档片段的过滤条件
+            limit: 条数限制
+            offset: 偏移量
+
+        Returns:
+            返回符合条件的文档
         """
         pass
 
 
 def parse_kb_id(kb_id: str) -> Tuple[str, str]:
     """
-    从知识库id中解析相关信息，标准格式为:
-            {kb_id};{embedding_model_id}
-    :param kb_id: 知识库id，和 `VectorKB.kb_id` 对应
-    :return: 返回kb_id和embedding_model_id
+    从知识库id中解析相关信息
+
+    Examples:
+        标准格式为 `{kb_name};{embedding_model_id} `  ::
+
+        - Hello;bge-m3
+        - nihao;bge-m3
+    Args:
+        kb_id: 知识库id，和 `VectorKB.kb_id` 对应
+
+    Returns:
+        返回kb_id和embedding_model_id
+
     """
     kb_name, embedding_model_id = kb_id.split(";", 1)
     return kb_name, embedding_model_id
@@ -126,10 +141,13 @@ class VectorKB(KnowledgeBase):
         Document]:
         """
         查询过滤
-        :param query: 查询字符串
-        :param filter_condition: 过滤条件，字典类型，前面为metadata中的字段，后面为匹配的值，默认为等价匹配，如果是列表则范围匹配，所有条件需要同时成立
-        :param limit: 查询数据数量限制
-        :return:
+        Args:
+            query: 查询字符串
+            filter_condition: 过滤条件，字典类型，前面为metadata中的字段，后面为匹配的值，默认为等价匹配，如果是列表则范围匹配，所有条件需要同时成立
+            limit: 查询数据数量限制
+
+        Returns:
+
         """
         query_filter = None
         if filter_condition:
@@ -161,7 +179,8 @@ class VectorKB(KnowledgeBase):
     def __init__(self, kb_id: Union[str, Tuple[str, str]]):
         """
         创建知识库代理
-        :param kb_id: kb_id或者(kb_name, embedding_model_id)
+        Args:
+            kb_id: kb_id或者(kb_name, embedding_model_id)
         """
         if isinstance(kb_id, str):
             self.kb_id: str = kb_id
@@ -177,7 +196,7 @@ class VectorKB(KnowledgeBase):
         try:
             self.__get_embedding()
         except EmbeddingNotFoundException as e:
-            logger.warning(f"The EmbeddingModel-[{e.model_uid}] model used by KB-[{kb_name}] was not register. "
+            _logger.warning(f"The EmbeddingModel-[{e.model_uid}] model used by KB-[{kb_name}] was not register. "
                            f"Please ensure is has been register before using KB-[{kb_name}]")
 
     def __get_embedding(self) -> EmbeddingModel:

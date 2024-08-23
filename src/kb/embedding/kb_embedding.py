@@ -7,7 +7,7 @@ from openai.types.embedding import Embedding
 
 from kb.embedding.embedding_excep import EmbeddingExistException, EmbeddingNotFoundException
 
-logger = getLogger(__name__)
+_logger = getLogger(__name__)
 
 
 class EmbeddingModel(abc.ABC, Callable[[str], Any]):
@@ -30,10 +30,12 @@ __embeddings: dict[str, EmbeddingModel] = {}
 def register(model_uid: str, model: EmbeddingModel):
     """
     将embedding模型注册到模型中
-    :param model_uid: 模型id
-    :param model: 模型
-    :exception EmbeddingExistException 模型已经存在
-    :return:
+    Args:
+        model_uid: 模型id
+        model: 模型
+
+    Raises:
+        EmbeddingExistException: 模型已经存在
     """
     if model_uid in __embeddings:
         raise EmbeddingExistException(model_uid=model_uid)
