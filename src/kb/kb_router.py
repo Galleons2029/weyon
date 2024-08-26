@@ -1,53 +1,22 @@
 """知识库API"""
 import logging
-import os.path
 from typing import Any
 
-from fastapi import APIRouter, UploadFile, File, BackgroundTasks, Path, Query, Body
-from starlette.responses import FileResponse
+from fastapi import APIRouter, Path, Query, Body
 
-from common import BaseResponse, success, failed
+import kb.kb_file
+from common import success, failed
 from kb.doc_retriever import get_doc_kb_by_id
-from kb.file.file_service import (check_file_type,
-                                  save_file,
-                                  check_file_size, get_upload_file_path)
 from kb.kb_config import DocxSchema
 from kb.kb_core import get_kb_by_id
-from kb.kb_loader import DocxLoader
 
 router = APIRouter(prefix="/kb",
                    tags=["Knowledge Base"])
 
+router.include_router(kb.kb_file.router
+                      )
+
 logger = logging.getLogger(__name__)
-
-
-@router.put("/{kb_id}",
-            summary="知识库上传",
-            description="上传文档并且嵌入指定知识库，返回文档id", )
-async def upload_file(background_tasks: BackgroundTasks,
-                      kb_id: str = Path(..., examples=["Hello;bge-m3"], description="知识库id"),
-                      file: UploadFile = File(..., description="知识库文件，当前仅支持docx")) -> BaseResponse:
-    """
-    文件上传接口
-    """
-    byte = await file.read()
-    check_file_type(byte, file.filename)
-    check_file_size(byte)
-    file_id, save_path = save_file(byte, file.filename)
-    background_tasks.add_task(write_to_kb_with_docx,
-                              filepath=save_path,
-                              kb_id=kb_id,
-                              filename=file.filename,
-                              file_id=file_id)
-    return success(msg=f'{file.filename} upload success', data=file_id)
-
-
-@router.get('/file/{file_id}',
-            summary="文档下载",
-            description="通过上传时返回的文件id，将上传的文档下载")
-async def get_doc(file_id: str = Path(..., description="文件路径")):
-    file_path = get_upload_file_path(file_id=file_id)
-    return FileResponse(path=file_path, filename=os.path.basename(file_path))
 
 
 @router.get("/{kb_id}",
@@ -59,7 +28,7 @@ async def query_kb(kb_id: str = Path(..., examples=["Hello;bge-m3"], description
                    limit: int = Query(3, description="查询条数", ge=1),
                    relevant: bool = Query(False, description="是否使用关联父子文档")):
     """知识库的向是查寻"""
-    docs = get_rel_docs_from_kb(query, kb_id, limit, docs, relevant)
+    docs = get_relevant_doc_from_kb(query, kb_id, limit, docs, relevant)
     data = [vars(doc) for doc in docs]
     return success(msg=f"Query [{query}] has found some relative documents", data=data)
 
@@ -102,7 +71,7 @@ def scroll_kb_with_filter(kb_id: str, condition: dict[str, Any] = None, limit: i
     return kb.filter_by(filter_condition=condition, limit=limit, offset=offset)
 
 
-def get_rel_docs_from_kb(query: str, kb_id: str, limit: int, docs: list[str] = None, relevant=False):
+def get_relevant_doc_from_kb(query: str, kb_id: str, limit: int, docs: list[str] = None, relevant=False):
     """从知识库中获取相关文档片段"""
     if docs:
         filter_condition = {DocxSchema.FILE_ID: docs}
@@ -113,15 +82,3 @@ def get_rel_docs_from_kb(query: str, kb_id: str, limit: int, docs: list[str] = N
         kb = get_doc_kb_by_id(kb_id=kb_id)
     res = kb.query_doc(query=query, limit=limit, filter_condition=filter_condition)
     return res
-
-
-def write_to_kb_with_docx(filepath: str, kb_id: str, filename: str, file_id: str):
-    """docx文档写入知识库"""
-    loader = DocxLoader(file_path=filepath)
-    loader.root.value = filename
-    kb = get_kb_by_id(kb_id)
-    for doc in loader.lazy_load():
-        doc.metadata[DocxSchema.FILE_ID] = file_id
-        kb.add_kb_split(doc)
-    logger.info(f"Finish the doc-[{filename}] embed to kb-[{kb_id}]")
-    return kb_id

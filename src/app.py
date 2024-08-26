@@ -7,9 +7,11 @@ from fastapi.responses import JSONResponse
 
 import config
 from common import failed, AbsException
+from config import file_handle
 from kb import kb_router
 
-config.logs_config()
+# 这里的 ‘G’ 代表Global的意思
+config.logs_config(handlers=file_handle(tag='G'))
 app = FastAPI(title='WeYon AI Open Platform', version='0.1.0', root_path="/api/v1")
 
 app.include_router(kb_router.router)

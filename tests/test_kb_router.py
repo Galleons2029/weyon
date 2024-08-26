@@ -18,7 +18,7 @@ class Test(TestCase):
         docx_file_path = Test.test_file
         with open(docx_file_path, 'rb') as docx_file:
             docx_content = docx_file.read()
-        resp = client.put('/kb/Hello;bge-m3',
+        resp = client.put('/kb/file/Hello;bge-m3',
                           files={"file": ('example.docx', docx_content,
                                           "application/vnd.openxmlformats-officedocument.wordprocessingml.document")})
         self.assertEqual(resp.status_code, 200)

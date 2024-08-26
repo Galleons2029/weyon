@@ -1,7 +1,8 @@
 import logging
 import os
 from datetime import date
-from typing import Literal, Any
+from logging import Handler
+from typing import Literal, Any, Union
 
 import coloredlogs
 
@@ -58,29 +59,40 @@ class LogConfig(metaclass=BaseConfig):
 def console_handle():
     """控制台日志处理函数"""
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
+    console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(LogConfig.COLORED_FORMAT)
     return console_handler
 
 
-def file_handle(tag="L", filename=None, ext="log"):
+def file_handle(tag="L", filename=None, ext="log", level=logging.DEBUG):
     """文件日志记录"""
     os.makedirs(LogConfig.LOG_FILE_PATH, exist_ok=True)
     file_path = os.path.join(LogConfig.LOG_FILE_PATH, filename or f"{date.today()}_{tag}.{ext}")
     file_handler = logging.FileHandler(file_path, encoding=LogConfig.LOG_ENCODING)
     file_handler.setFormatter(logging.Formatter(LogConfig.BASIC_FORMAT, style=LogConfig.LOG_STYLE))
+    file_handler.setLevel(level)
     return file_handler
 
 
-def logs_config(logger: logging.Logger = None, filename=None):
+def logs_config(logger: logging.Logger = None,
+                handlers: Union[list[Handler], Handler] = None):
+    """
+    日志配置
+    Args:
+        logger: 日志记录对象，如果为空则设置全局对象，即logging.basicConfig
+        handlers: 需要添加的处理器
+
+    Returns:
+
+    """
     """日志初始化配置"""
-    handlers = [console_handle()]
-    if filename:
-        handlers.append(file_handle(filename))
+    hs = [console_handle()]
+    if hs:
+        hs += handlers if isinstance(handlers, list) else [handlers]
     if logger:
-        logger.addHandler(*handlers)
+        logger.addHandler(*hs)
     else:
-        logging.basicConfig(level=logging.INFO,
+        logging.basicConfig(level=logging.DEBUG,
                             format=LogConfig.BASIC_FORMAT,
                             style=LogConfig.LOG_STYLE,
-                            handlers=handlers)
+                            handlers=hs)
