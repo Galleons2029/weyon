@@ -1,3 +1,4 @@
+import glob
 import os.path
 import uuid
 
@@ -53,3 +54,16 @@ def save_file(contents, filename) -> tuple[str, str]:
     with open(save_file_path, 'wb') as f:
         f.write(contents)
     return file_id, save_file_path
+
+
+def get_upload_file_path(file_id: str) -> str:
+    """
+    根据id获取上传的文件
+    Args:
+        file_id: 上传文件时返回的文家id
+
+    Returns:
+        返回文件路径
+    """
+    filename = glob.glob(f"{file_id}.*", root_dir=UploadConfig.UPLOAD_SAVING_PATH)[-1]
+    return os.path.join(UploadConfig.UPLOAD_SAVING_PATH, filename)

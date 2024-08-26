@@ -1,14 +1,16 @@
 """知识库API"""
 import logging
+import os.path
 from typing import Any
 
 from fastapi import APIRouter, UploadFile, File, BackgroundTasks, Path, Query, Body
+from starlette.responses import FileResponse
 
 from common import BaseResponse, success, failed
 from kb.doc_retriever import get_doc_kb_by_id
 from kb.file.file_service import (check_file_type,
                                   save_file,
-                                  check_file_size)
+                                  check_file_size, get_upload_file_path)
 from kb.kb_config import DocxSchema
 from kb.kb_core import get_kb_by_id
 from kb.kb_loader import DocxLoader
@@ -38,6 +40,14 @@ async def upload_file(background_tasks: BackgroundTasks,
                               filename=file.filename,
                               file_id=file_id)
     return success(msg=f'{file.filename} upload success', data=file_id)
+
+
+@router.get('/file/{file_id}',
+            summary="文档下载",
+            description="通过上传时返回的文件id，将上传的文档下载")
+async def get_doc(file_id: str = Path(..., description="文件路径")):
+    file_path = get_upload_file_path(file_id=file_id)
+    return FileResponse(path=file_path, filename=os.path.basename(file_path))
 
 
 @router.get("/{kb_id}",
