@@ -26,3 +26,12 @@ class FileTypeException(FileException):
         super().__init__(filename)
         self.mime_type = mime_type
         self.msg = msg or f"The type of file-[{filename}] is out of limit"
+
+
+class FileNotFound(FileException):
+    """文件不存在"""
+
+    def __init__(self, filename, msg=None, base_path=None):
+        super().__init__(filename)
+        self.base_path = base_path
+        self.msg = msg or f"The file-[{filename}] is not found" + (f" in path-[{base_path}]" if base_path else "")

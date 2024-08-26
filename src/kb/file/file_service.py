@@ -4,7 +4,7 @@ import uuid
 
 import magic
 
-from kb.file.file_excep import FileTypeException, FileSizeException
+from kb.file.file_excep import FileTypeException, FileSizeException, FileNotFound
 from kb.kb_config import UploadConfig
 
 # 创建一个 magic.Magic 对象，使用 mime 真类来检测 MIME 类型
@@ -64,6 +64,13 @@ def get_upload_file_path(file_id: str) -> str:
 
     Returns:
         返回文件路径
+
+    Raises:
+        FileNotFound: 文件不存在
     """
-    filename = glob.glob(f"{file_id}.*", root_dir=UploadConfig.UPLOAD_SAVING_PATH)[-1]
-    return os.path.join(UploadConfig.UPLOAD_SAVING_PATH, filename)
+    files = glob.glob(f"{file_id}.*", root_dir=UploadConfig.UPLOAD_SAVING_PATH)
+    if len(files) > 0:
+        filename = files[-1]
+        return os.path.join(UploadConfig.UPLOAD_SAVING_PATH, filename)
+    else:
+        raise FileNotFound(filename=file_id, base_path=UploadConfig.UPLOAD_SAVING_PATH)
