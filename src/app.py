@@ -3,7 +3,7 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 import config
 from common import failed, AbsException
@@ -32,4 +32,4 @@ async def file_exception(_, exc: AbsException):
 @app.get("/", summary="链接测试使用")
 async def root():
     """测试连接使用"""
-    return {"message": "Hello World"}
+    return RedirectResponse("/docs")
