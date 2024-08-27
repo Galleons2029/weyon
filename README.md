@@ -69,6 +69,7 @@ sudo docker run -p 6333:6333 \
 
 > [!Tip]
 >
+>
 Conda是一个开源的包管理系统和环境管理系统，它主要用于安装和管理软件包以及创建和维护不同版本的软件环境。Conda可以在Windows、macOS和Linux操作系统上运行，与Python编程语言结合使用。Conda允许用户安装不同版本的库和工具，同时保持它们之间的相互独立，避免版本冲突。
 >
 > Conda 安装教程： [Conda Installation](https://conda.io/projects/conda/en/latest/user-guide/install/index.html)
