@@ -25,14 +25,14 @@ class QdrantConfig(metaclass=BaseConfig):
     """Qdrant 连接地址"""
 
 
-class XinferenceConfig(metaclass=BaseConfig):
-    """Xinference 链接配置"""
+class EmbeddingConfig(metaclass=BaseConfig):
+    """外部 Embedding 配置"""
 
     API_KEY: str = "dummy"
     """Xinference API 接口密钥"""
 
     BASE_URL: str = "http://192.168.100.111:9997/v1"
-    """Xinference接口url"""
+    """Embedding 链接地址"""
 
     EMBEDDINGS: Union[str, list[str]] = "bge-m3"
     """Embedding模型，可以是单个或者列表，目前是单个，如果是列表需要更改知识库注册的代码"""

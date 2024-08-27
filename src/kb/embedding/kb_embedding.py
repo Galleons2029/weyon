@@ -52,8 +52,8 @@ def get_all_embeddings():
     return __embeddings.copy()
 
 
-class XinferenceEmbedding(EmbeddingModel):
-    """XInference Embedding Model"""
+class OpenAIEmbedding(EmbeddingModel):
+    """OpenAI Embedding Model"""
     _TEST_TEXT: str = "Hello"
 
     def embed(self, query: str) -> Embedding:
@@ -67,19 +67,22 @@ class XinferenceEmbedding(EmbeddingModel):
         assert isinstance(client, Client)
         self._client = client
         self.model_uid = model_uid
-        res = self(XinferenceEmbedding._TEST_TEXT)
+        res = self(OpenAIEmbedding._TEST_TEXT)
         self.size = len(res.embedding)
 
     @staticmethod
     def from_api(api_key: str, base_url: str, model_uid: str):
         from openai import Client
-        return XinferenceEmbedding(client=Client(api_key=api_key,
-                                                 base_url=base_url),
-                                   model_uid=model_uid)
+        return OpenAIEmbedding(client=Client(api_key=api_key,
+                                             base_url=base_url),
+                               model_uid=model_uid)
 
 
-from kb.kb_config import XinferenceConfig
+from kb.kb_config import EmbeddingConfig
 
-register(XinferenceConfig.EMBEDDINGS, XinferenceEmbedding.from_api(api_key=XinferenceConfig.API_KEY,
-                                                                   base_url=XinferenceConfig.BASE_URL,
-                                                                   model_uid=XinferenceConfig.EMBEDDINGS))
+embeds = [EmbeddingConfig.EMBEDDINGS] if isinstance(EmbeddingConfig.EMBEDDINGS, str) else EmbeddingConfig.EMBEDDINGS
+
+for emb in embeds:
+    register(emb, OpenAIEmbedding.from_api(api_key=EmbeddingConfig.API_KEY,
+                                           base_url=EmbeddingConfig.BASE_URL,
+                                           model_uid=emb))
