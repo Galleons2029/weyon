@@ -54,8 +54,8 @@ async def filter_kb(kb_id: str = Path(..., examples=["Hello;bge-m3"],
                description="指定文档id（上传文档时生成）和知识库，从指定知识库中删除文档")
 async def delete_doc(kb_id: str = Path(..., examples=["Hello;bge-m3"],
                                        description="知识库id"),
-                     doc_ids: list[str] = Query(..., description="指定相关文档id，上传时返回，具体可见上传文档接口 ")):
-    res = delete_doc_from_kb(kb_id=kb_id, doc_ids=doc_ids)
+                     file_ids: list[str] = Query(..., description="指定相关文档id，上传时返回，具体可见上传文档接口 ")):
+    res = delete_doc_from_kb(kb_id=kb_id, doc_ids=file_ids)
     return success("成功删除") if res else failed("删除失败")
 
 

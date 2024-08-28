@@ -33,7 +33,7 @@ async def upload_file(background_tasks: BackgroundTasks,
                               kb_id=kb_id,
                               filename=file.filename,
                               file_id=file_id)
-    return success(msg=f'{file.filename} upload success', data=file_id)
+    return success(msg=f'{file.filename} upload success', data={'file_id': file_id})
 
 
 def write_to_kb_with_docx(filepath: str, kb_id: str, filename: str, file_id: str):
@@ -48,7 +48,7 @@ def write_to_kb_with_docx(filepath: str, kb_id: str, filename: str, file_id: str
     return kb_id
 
 
-@router.get('/file/{file_id}',
+@router.get('/{file_id}',
             summary="文档下载",
             description="通过上传时返回的文件id，将上传的文档下载")
 async def get_doc(file_id: str = Path(..., description="文件路径")):

@@ -23,7 +23,7 @@ class Test(TestCase):
                                           "application/vnd.openxmlformats-officedocument.wordprocessingml.document")})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json().get('code'), ResponseCode.SUCCESS.value)
-        file_path = os.path.join(UploadConfig.UPLOAD_SAVING_PATH, resp.json().get('data') + '.docx')
+        file_path = os.path.join(UploadConfig.UPLOAD_SAVING_PATH, resp.json().get('data')['file_id'] + '.docx')
         self.assertTrue(os.path.exists(file_path))
         os.remove(file_path)
 
@@ -49,7 +49,7 @@ class Test(TestCase):
     def test_delete_doc(self):
         resp = client.delete('/kb/Hello;bge-m3',
                              params={
-                                 "doc_ids": "dsfasdfadsfa"
+                                 "file_ids": "dsfasdfadsfa"
                              })
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json().get('code'), ResponseCode.SUCCESS.value)
